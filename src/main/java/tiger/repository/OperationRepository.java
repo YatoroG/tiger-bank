@@ -1,7 +1,10 @@
 package tiger.repository;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Repository;
 import tiger.model.Operation;
 
@@ -27,6 +30,12 @@ public class OperationRepository {
 
     public Operation getOperation(int id) {
         return operations.get(id);
+    }
+
+    public List<Map.Entry<Integer, Operation>> getAccountOperations(int accountId) {
+        return operations.entrySet().stream().filter(integerOperationEntry
+                        -> integerOperationEntry.getValue().getBankAccountId() == accountId)
+                        .collect(Collectors.toList());
     }
 
     public Map<Integer, Operation> getAllOperations() {
