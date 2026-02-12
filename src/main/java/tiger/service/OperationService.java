@@ -16,6 +16,7 @@ public class OperationService {
     private final OperationRepository operationRepository;
     private final BankAccountRepository bankAccountRepository;
     private final CategoryRepository categoryRepository;
+    private int nextOperationId;
 
     public OperationService(OperationRepository operationRepository,
                             BankAccountRepository bankAccountRepository,
@@ -32,7 +33,8 @@ public class OperationService {
             throw new IllegalArgumentException("Ошибка: Счет с id " + accountId + "не найден");
         }
 
-        Operation operation = new Operation(type, accountId, amount, date, description, categoryId);
+        Operation operation = new Operation(nextOperationId++, type, accountId, amount, date,
+                description, categoryId);
         operationRepository.add(operation);
         updateBalance(bankAccount, amount, type);
         return operation;

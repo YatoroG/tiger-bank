@@ -1,16 +1,14 @@
 package tiger.model;
 
 public class Category {
-    private static int nextCategoryId = 1;
     private final int categoryId;
     private OperationType operationType;
     private String name;
 
-    public Category(String name, OperationType operationType) {
-        this.categoryId = nextCategoryId;
+    public Category(int categoryId, String name, OperationType operationType) {
+        this.categoryId = categoryId;
         this.name = name;
         this.operationType = operationType;
-        nextCategoryId++;
     }
 
     public int getCategoryId() {

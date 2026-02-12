@@ -3,23 +3,20 @@ package tiger.model;
 import java.math.BigDecimal;
 
 public class BankAccount {
-    private static int nextAccountId = 1;
     private final int accountId;
     private String name;
     private BigDecimal balance;
 
-    public BankAccount(String name) {
-        this.accountId = nextAccountId;
+    public BankAccount(int accountId, String name) {
+        this.accountId = accountId;
         this.name = name;
         this.balance = BigDecimal.ZERO;
-        ++nextAccountId;
     }
 
-    public BankAccount(String name, BigDecimal balance) {
-        this.accountId = nextAccountId;
+    public BankAccount(int accountId, String name, BigDecimal balance) {
+        this.accountId = accountId;
         this.name = name;
         this.balance = balance;
-        ++nextAccountId;
     }
 
     public int getAccountId() {

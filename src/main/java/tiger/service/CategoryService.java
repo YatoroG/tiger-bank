@@ -9,13 +9,14 @@ import tiger.repository.CategoryRepository;
 @Service
 public class CategoryService {
     private final CategoryRepository repository;
+    private int nextCategoryId = 1;
 
     public CategoryService(CategoryRepository repository) {
         this.repository = repository;
     }
 
     public Category createCategory(String name, OperationType type) {
-        Category category = new Category(name, type);
+        Category category = new Category(nextCategoryId++, name, type);
         repository.add(category);
         return category;
     }

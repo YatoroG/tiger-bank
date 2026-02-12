@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class Operation {
-    private static int nextOperationId = 1;
     private final int operationId;
     private OperationType type;
     private final int bankAccountId;
@@ -13,16 +12,15 @@ public class Operation {
     private String description;
     private int categoryId;
 
-    public Operation(OperationType type, int bankAccountId, BigDecimal amount,
+    public Operation(int operationId, OperationType type, int bankAccountId, BigDecimal amount,
                      LocalDateTime date, String description, int categoryId) {
-        this.operationId = nextOperationId;
+        this.operationId = operationId;
         this.type = type;
         this.bankAccountId = bankAccountId;
         this.amount = amount;
         this.date = date;
         this.description = description;
         this.categoryId = categoryId;
-        ++nextOperationId;
     }
 
     public int getOperationId() {

@@ -9,6 +9,7 @@ import tiger.repository.BankAccountRepository;
 @Service
 public class BankAccountService {
     private final BankAccountRepository repository;
+    private int nextAccountId = 1;
 
     public BankAccountService(BankAccountRepository repository) {
         this.repository = repository;
@@ -19,7 +20,8 @@ public class BankAccountService {
             throw new IllegalArgumentException("Ошибка: Название счета не может быть пустым");
         }
 
-        BankAccount account = (balance == null) ? new BankAccount(name) : new BankAccount(name, balance);
+        BankAccount account = (balance == null) ? new BankAccount(nextAccountId++, name)
+                : new BankAccount(nextAccountId++, name, balance);
         repository.add(account);
         return account;
     }
