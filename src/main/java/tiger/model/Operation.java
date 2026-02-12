@@ -14,12 +14,12 @@ public class Operation {
     private int categoryId;
 
     public Operation(OperationType type, int bankAccountId, BigDecimal amount,
-                     String description, int categoryId) {
+                     LocalDateTime date, String description, int categoryId) {
         this.operationId = nextOperationId;
         this.type = type;
         this.bankAccountId = bankAccountId;
         this.amount = amount;
-        this.date = LocalDateTime.now();
+        this.date = date;
         this.description = description;
         this.categoryId = categoryId;
         ++nextOperationId;

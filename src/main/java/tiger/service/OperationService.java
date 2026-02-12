@@ -26,13 +26,13 @@ public class OperationService {
     }
 
     public Operation addOperation(OperationType type, int accountId, BigDecimal amount,
-                                  String description, int categoryId) {
+                                  LocalDateTime date, String description, int categoryId) {
         BankAccount bankAccount = bankAccountRepository.getAccount(accountId);
         if (bankAccount == null) {
             throw new IllegalArgumentException("Ошибка: Счет с id " + accountId + "не найден");
         }
 
-        Operation operation = new Operation(type, accountId, amount, description, categoryId);
+        Operation operation = new Operation(type, accountId, amount, date, description, categoryId);
         operationRepository.add(operation);
         updateBalance(bankAccount, amount, type);
         return operation;
