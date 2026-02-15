@@ -3,9 +3,12 @@ package tiger.model;
 import java.math.BigDecimal;
 
 public class BankAccount {
-    private final int accountId;
+    private int accountId;
     private String name;
     private BigDecimal balance;
+
+    public BankAccount() {
+    }
 
     public BankAccount(int accountId, String name) {
         this.accountId = accountId;

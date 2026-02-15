@@ -4,13 +4,16 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class Operation {
-    private final int operationId;
+    private int operationId;
     private OperationType type;
-    private final int bankAccountId;
+    private int bankAccountId;
     private BigDecimal amount;
     private LocalDateTime date;
     private String description;
     private int categoryId;
+
+    public Operation() {
+    }
 
     public Operation(int operationId, OperationType type, int bankAccountId, BigDecimal amount,
                      LocalDateTime date, String description, int categoryId) {

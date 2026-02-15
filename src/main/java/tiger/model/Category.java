@@ -1,9 +1,12 @@
 package tiger.model;
 
 public class Category {
-    private final int categoryId;
+    private int categoryId;
     private OperationType operationType;
     private String name;
+
+    public Category() {
+    }
 
     public Category(int categoryId, String name, OperationType operationType) {
         this.categoryId = categoryId;
@@ -27,7 +30,7 @@ public class Category {
         this.name = newName;
     }
 
-    public void setType(OperationType newType) {
+    public void setCategoryType(OperationType newType) {
         this.operationType = newType;
     }
 }
