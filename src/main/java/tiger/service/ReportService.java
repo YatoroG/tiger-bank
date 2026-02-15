@@ -11,6 +11,8 @@ import tiger.model.Operation;
 import tiger.model.OperationType;
 import tiger.repository.CategoryRepository;
 import tiger.repository.OperationRepository;
+import tiger.service.dto.GroupedCategoriesReport;
+import tiger.service.dto.PeriodicReport;
 
 @Service
 public class ReportService {
@@ -23,9 +25,9 @@ public class ReportService {
         this.operationRepository = operationRepository;
     }
 
-    public StringBuilder reportDiffForSelectedPeriod(int accountId, LocalDateTime from, LocalDateTime to) {
+    public PeriodicReport reportDiffForSelectedPeriod(int accountId, LocalDateTime from, LocalDateTime to) {
         if (to.isBefore(from)) {
-            return new StringBuilder("Ошибка: Невозможно выделить период");
+            throw new IllegalArgumentException("Ошибка: Невозможно выделить период");
         }
 
         BigDecimal totalIncome = BigDecimal.ZERO;
@@ -49,17 +51,13 @@ public class ReportService {
             }
         }
 
-        StringBuilder result = new StringBuilder();
-        result.append("ОТЧЕТ О ДОХОДАХ И РАСХОДАХ ЗА ПЕРИОД С ").append(from)
-                .append(" ПО ").append(to).append('\n');
-        result.append("Общий доход: ").append(totalIncome).append('\n');
-        result.append("Общие траты: ").append(totalExpense).append('\n');
-        result.append("Разница: ").append(totalIncome.subtract(totalExpense));
-
-        return result;
+        return new PeriodicReport(from, to,
+                totalIncome, totalExpense,
+                totalIncome.subtract(totalExpense)
+        );
     }
 
-    public StringBuilder reportGroupedCategories(int accountId, OperationType type) {
+    public GroupedCategoriesReport reportGroupedCategories(int accountId, OperationType type) {
         Map<String, BigDecimal> categoryTotals = new HashMap<>();
         List<Map.Entry<Integer, Operation>> accountOperations
                 = operationRepository.getAccountOperations(accountId);
@@ -75,19 +73,6 @@ public class ReportService {
             }
         }
 
-        StringBuilder result = new StringBuilder();
-        result.append("ОТЧЕТ О ").append(type.toString().toUpperCase())
-                .append("АХ ПО КАТЕГОРИЯМ").append('\n');
-
-        if (categoryTotals.isEmpty()) {
-            return new StringBuilder("Данные отсутствуют");
-        }
-
-        for (Map.Entry<String, BigDecimal> entry : categoryTotals.entrySet()) {
-            result.append("Категория [").append(entry.getKey()).append("]: ")
-                    .append(entry.getValue()).append('\n');
-        }
-
-        return result;
+        return new GroupedCategoriesReport(categoryTotals, type);
     }
 }
