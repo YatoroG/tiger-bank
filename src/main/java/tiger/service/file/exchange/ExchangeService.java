@@ -68,7 +68,8 @@ public class ExchangeService {
         DataAggregator importedData = jsonProvider.importData();
         renewNextIds(importedData);
         System.out.println("Импорт JSON завершен успешно. Восстановлено объектов: " +
-                (importedData.getAccounts().size() + importedData.getCategories().size() + importedData.getOperations().size()));
+                        (importedData.getAccounts().size() + importedData.getCategories().size() +
+                        importedData.getOperations().size()));
     }
 
     public void performJsonExport() {
@@ -86,7 +87,8 @@ public class ExchangeService {
         DataAggregator importedData = yamlProvider.importData();
         renewNextIds(importedData);
         System.out.println("Импорт YAML завершен успешно. Восстановлено объектов: " +
-                (importedData.getAccounts().size() + importedData.getCategories().size() + importedData.getOperations().size()));
+                        (importedData.getAccounts().size() + importedData.getCategories().size() +
+                        importedData.getOperations().size()));
     }
 
     public void performYamlExport() {
@@ -99,7 +101,6 @@ public class ExchangeService {
             System.err.println("Ошибка: Не удалось выполнить экспорт: " + e.getMessage());
         }
     }
-
 
     private DataAggregator getDataAggregator() {
         List<BankAccount> accounts = new ArrayList<>(accountRepo.getAllAccounts().values());

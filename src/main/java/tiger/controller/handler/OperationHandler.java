@@ -27,7 +27,8 @@ public class OperationHandler {
             System.out.print("Сумма: ");
             BigDecimal amount = new BigDecimal(scanner.nextLine());
             System.out.print("Тип операции (1 - Доход, 2 - Расход): ");
-            OperationType type = scanner.nextLine().equals("1") ? OperationType.INCOME : OperationType.EXPENSE;
+            OperationType type = scanner.nextLine().equals("1")
+                    ? OperationType.INCOME : OperationType.EXPENSE;
             System.out.print("ID категории: ");
             int catId = Integer.parseInt(scanner.nextLine());
             System.out.print("Описание: ");
