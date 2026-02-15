@@ -15,7 +15,7 @@ public class BankAccountService {
         this.repository = repository;
     }
 
-    public BankAccount createAccount(String name, BigDecimal balance) {
+    public void createAccount(String name, BigDecimal balance) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Ошибка: Название счета не может быть пустым");
         }
@@ -23,7 +23,6 @@ public class BankAccountService {
         BankAccount account = (balance == null) ? new BankAccount(nextAccountId++, name)
                 : new BankAccount(nextAccountId++, name, balance);
         repository.add(account);
-        return account;
     }
 
     public void updateAccountName(int id, String newName) {
@@ -50,5 +49,9 @@ public class BankAccountService {
 
     public Collection<BankAccount> getAllAccounts() {
         return repository.getAllAccounts().values();
+    }
+
+    public void checkNextId(int maxAccId) {
+        this.nextAccountId = maxAccId + 1;
     }
 }

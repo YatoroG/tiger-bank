@@ -15,10 +15,9 @@ public class CategoryService {
         this.repository = repository;
     }
 
-    public Category createCategory(String name, OperationType type) {
+    public void createCategory(String name, OperationType type) {
         Category category = new Category(nextCategoryId++, name, type);
         repository.add(category);
-        return category;
     }
 
     public void updateCategoryName(int id, String newName) {
@@ -34,7 +33,7 @@ public class CategoryService {
     public void updateCategoryType(int id, OperationType newType) {
         Category category = repository.getCategory(id);
         if (category != null) {
-            category.setType(newType);
+            category.setCategoryType(newType);
             repository.update(category);
         } else {
             System.out.println("Ошибка: Категория с " + id + " не найдена");
@@ -55,5 +54,9 @@ public class CategoryService {
 
     public Collection<Category> getAllCategories() {
         return repository.getAllCategories().values();
+    }
+
+    public void checkNextId(int maxCatId) {
+        this.nextCategoryId = maxCatId + 1;
     }
 }
