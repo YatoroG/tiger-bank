@@ -5,14 +5,14 @@ import java.time.LocalDateTime;
 import java.util.Scanner;
 import org.springframework.stereotype.Component;
 import tiger.model.OperationType;
-import tiger.service.OperationService;
+import tiger.service.IOperationService;
 
 @Component
 public class OperationHandler {
-    private final OperationService operationService;
+    private final IOperationService operationService;
     private final Scanner scanner = new Scanner(System.in);
 
-    public OperationHandler(OperationService operationService) {
+    public OperationHandler(IOperationService operationService) {
         this.operationService = operationService;
     }
 

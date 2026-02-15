@@ -31,7 +31,7 @@ public class BankController {
             System.out.println("--- ТИГРБАНК. УЧЕТ ФИНАНСОВ ---");
             System.out.println("1. Счета (Создать/Список)");
             System.out.println("2. Категории (Создать/Список)");
-            System.out.println("3. Операции (Создать)");
+            System.out.println("3. Операции (Создать/Список)");
             System.out.println("4. Аналитика (Все операции/По категориям)");
             System.out.println("5. Данные (Импорт/Экспорт)");
             System.out.println("0. Выход");

@@ -2,7 +2,9 @@ package tiger.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import tiger.model.BankAccount;
 import tiger.model.Operation;
@@ -11,12 +13,12 @@ import tiger.repository.BankAccountRepository;
 import tiger.repository.CategoryRepository;
 import tiger.repository.OperationRepository;
 
-@Service
-public class OperationService {
+@Service("mainOperationService")
+public class OperationService implements IOperationService {
     private final OperationRepository operationRepository;
     private final BankAccountRepository bankAccountRepository;
     private final CategoryRepository categoryRepository;
-    private int nextOperationId;
+    private int nextOperationId = 1;
 
     public OperationService(OperationRepository operationRepository,
                             BankAccountRepository bankAccountRepository,
@@ -26,6 +28,7 @@ public class OperationService {
         this.categoryRepository = categoryRepository;
     }
 
+    @Override
     public Operation addOperation(OperationType type, int accountId, BigDecimal amount,
                                   LocalDateTime date, String description, int categoryId) {
         BankAccount bankAccount = bankAccountRepository.getAccount(accountId);
@@ -40,6 +43,7 @@ public class OperationService {
         return operation;
     }
 
+    @Override
     public void updateAmount(int id, BigDecimal newAmount) {
         Operation operation = operationRepository.getOperation(id);
         if (operation == null) {
@@ -90,6 +94,7 @@ public class OperationService {
         }
     }
 
+    @Override
     public void deleteOperation(int id) {
         Operation operation = operationRepository.getOperation(id);
         if (operation != null) {
@@ -111,6 +116,13 @@ public class OperationService {
         return operationRepository.getAllOperations().values();
     }
 
+    @Override
+    public List<Operation> getLastFiveOperations() {
+        List<Operation> allOperations = new ArrayList<>(operationRepository.getAllOperations().values());
+        int size = allOperations.size();
+        return allOperations.subList(Math.max(0, size - 5), size);
+    }
+
     private void updateBalance(BankAccount account, BigDecimal amount, OperationType type) {
         if (type == OperationType.INCOME) {
             account.setBalance(account.getBalance().add(amount));
@@ -118,5 +130,9 @@ public class OperationService {
             account.setBalance(account.getBalance().subtract(amount));
         }
         bankAccountRepository.update(account);
+    }
+
+    public void checkNextId(int maxOpId) {
+        this.nextOperationId = maxOpId + 1;
     }
 }
