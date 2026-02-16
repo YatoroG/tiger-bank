@@ -26,24 +26,22 @@ public class BankAccountService {
     }
 
     public void updateAccountName(int id, String newName) {
-        BankAccount account = repository.getAccount(id);
-        if (account != null) {
-            account.setName(newName);
-            repository.update(account);
-        } else {
-            System.out.println("Ошибка: Счет с ID " + id + " не найден");
-        }
+        BankAccount account = getAccount(id);
+        account.setName(newName);
+        repository.update(account);
     }
 
     public void deleteAccount(int id) {
-        if (repository.hasAccount(id)) {
-            repository.delete(id);
-        } else {
-            System.out.println("Ошибка: Счет с ID " + id + " не найден");
+        if (!repository.hasAccount(id)) {
+            throw new IllegalArgumentException("Ошибка: Счет с ID " + id + " не найден");
         }
+        repository.delete(id);
     }
 
     public BankAccount getAccount(int id) {
+        if (!repository.hasAccount(id)) {
+            throw new IllegalArgumentException("Ошибка: Счет с ID " + id + " не найден");
+        }
         return repository.getAccount(id);
     }
 

@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import tiger.model.BankAccount;
+import tiger.model.Category;
 import tiger.model.Operation;
 import tiger.model.OperationType;
 import tiger.repository.BankAccountRepository;
@@ -36,6 +37,15 @@ public class OperationService implements IOperationService {
             throw new IllegalArgumentException("Ошибка: Счет с id " + accountId + "не найден");
         }
 
+        Category category = categoryRepository.getCategory(categoryId);
+        if (category == null) {
+            throw new IllegalArgumentException("Ошибка: Категория с " + categoryId + " не найдена");
+        }
+
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Ошибка: Сумма не может быть пустой или меньше 0");
+        }
+
         Operation operation = new Operation(nextOperationId++, type, accountId, amount, date,
                 description, categoryId);
         operationRepository.add(operation);
@@ -45,12 +55,7 @@ public class OperationService implements IOperationService {
 
     @Override
     public void updateAmount(int id, BigDecimal newAmount) {
-        Operation operation = operationRepository.getOperation(id);
-        if (operation == null) {
-            System.out.println("Ошибка: Операция с id " + id + " не найдена");
-            return;
-        }
-
+        Operation operation = getOperation(id);
         BankAccount account = bankAccountRepository.getAccount(operation.getBankAccountId());
         updateBalance(account, operation.getAmount(),
                 operation.getType() == OperationType.INCOME ? OperationType.EXPENSE : OperationType.INCOME);
@@ -61,54 +66,39 @@ public class OperationService implements IOperationService {
 
     public void updateCategory(int id, int newCategoryId) {
         if (!categoryRepository.hasCategory(newCategoryId)) {
-            System.out.println("Ошибка: Категория с id " + newCategoryId + " не найдена");
-            return;
+            throw new IllegalArgumentException("Ошибка: Категория с " + newCategoryId + " не найдена");
         }
 
-        Operation operation = operationRepository.getOperation(id);
-        if (operation != null) {
-            operation.setCategory(newCategoryId);
-            operationRepository.update(operation);
-        } else {
-            System.out.println("Ошибка: Операция с id " + id + " не найдена");
-        }
+        Operation operation = getOperation(id);
+        operation.setCategory(newCategoryId);
+        operationRepository.update(operation);
     }
 
-    public void updateDescription(int id, String newDescr) {
-        Operation operation = operationRepository.getOperation(id);
-        if (operation != null) {
-            operation.setDescription(newDescr);
-            operationRepository.update(operation);
-        } else {
-            System.out.println("Ошибка: Операция с id " + id + " не найдена");
-        }
+    public void updateDescription(int id, String newDescription) {
+        Operation operation = getOperation(id);
+        operation.setDescription(newDescription);
+        operationRepository.update(operation);
     }
 
     public void updateDate(int id, LocalDateTime newDate) {
-        Operation operation = operationRepository.getOperation(id);
-        if (operation != null) {
-            operation.setDate(newDate);
-            operationRepository.update(operation);
-        } else {
-            System.out.println("Ошибка: Операция с id " + id + " не найдена");
-        }
+        Operation operation = getOperation(id);
+        operation.setDate(newDate);
+        operationRepository.update(operation);
     }
 
     @Override
     public void deleteOperation(int id) {
-        Operation operation = operationRepository.getOperation(id);
-        if (operation != null) {
-            BankAccount account = bankAccountRepository.getAccount(operation.getBankAccountId());
-            updateBalance(account, operation.getAmount(),
-                    operation.getType() == OperationType.INCOME ?
-                            OperationType.EXPENSE : OperationType.INCOME);
-            operationRepository.delete(id);
-        } else {
-            System.out.println("Ошибка: Операция с id " + id + " не найдена");
-        }
+        Operation operation = getOperation(id);
+        BankAccount account = bankAccountRepository.getAccount(operation.getBankAccountId());
+        updateBalance(account, operation.getAmount(),
+                operation.getType() == OperationType.INCOME ? OperationType.EXPENSE : OperationType.INCOME);
+        operationRepository.delete(id);
     }
 
     public Operation getOperation(int id) {
+        if (!operationRepository.hasOperation(id)) {
+            throw new IllegalArgumentException("Ошибка: Операция с id " + id + " не найдена");
+        }
         return operationRepository.getOperation(id);
     }
 
