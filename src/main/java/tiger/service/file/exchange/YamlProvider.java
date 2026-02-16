@@ -36,4 +36,9 @@ public class YamlProvider implements IExchangeProvider {
             throw new RuntimeException("Ошибка: Не удалось прочитать YAML (" + e.getMessage() + ")");
         }
     }
+
+    @Override
+    public String getFormat() {
+        return "yaml";
+    }
 }

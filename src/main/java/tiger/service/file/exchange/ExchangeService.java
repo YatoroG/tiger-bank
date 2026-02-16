@@ -2,6 +2,8 @@ package tiger.service.file.exchange;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import tiger.model.BankAccount;
 import tiger.model.Category;
@@ -24,82 +26,50 @@ public class ExchangeService {
     private final CategoryService categoryService;
     private final OperationService operationService;
 
-    private final IExchangeProvider csvProvider;
-    private final JsonProvider jsonProvider;
-    private final YamlProvider yamlProvider;
+    private final Map<String, IExchangeProvider> providers;
 
     public ExchangeService(BankAccountRepository accountRepo, CategoryRepository categoryRepo,
                            OperationRepository operationRepo, BankAccountService accountService,
                            CategoryService categoryService, OperationService operationService,
-                           IExchangeProvider csvProvider, JsonProvider jsonProvider,
-                           YamlProvider yamlProvider) {
+                           List<IExchangeProvider> providerList) {
         this.accountRepo = accountRepo;
         this.categoryRepo = categoryRepo;
         this.operationRepo = operationRepo;
         this.accountService = accountService;
         this.categoryService = categoryService;
         this.operationService = operationService;
-        this.csvProvider = csvProvider;
-        this.jsonProvider = jsonProvider;
-        this.yamlProvider = yamlProvider;
+        this.providers = providerList.stream()
+                .collect(Collectors.toMap(IExchangeProvider::getFormat, p -> p));
     }
 
-    public void performCsvImport() {
-        DataAggregator importedData = csvProvider.importData();
+    public void performImport(String format) {
+        IExchangeProvider provider = getProvider(format);
+        DataAggregator importedData = provider.importData();
         renewNextIds(importedData);
-        System.out.println("Импорт CSV завершен успешно. Восстановлено объектов: " +
-                (importedData.getAccounts().size() +
-                        importedData.getCategories().size() +
+
+        System.out.println("Импорт " + format.toUpperCase() + " завершен успешно. Восстановлено объектов: " +
+                (importedData.getAccounts().size() + importedData.getCategories().size() +
                         importedData.getOperations().size()));
     }
 
-    public void performCsvExport() {
+    public void performExport(String format) {
+        IExchangeProvider provider = getProvider(format);
         DataAggregator dataToExport = getDataAggregator();
 
         try {
-            csvProvider.exportData(dataToExport);
-            System.out.println("Данные успешно экспортированы в CSV");
+            provider.exportData(dataToExport);
+            System.out.println("Данные успешно экспортированы в " + format.toUpperCase());
         } catch (Exception e) {
-            System.err.println("Ошибка: Не удалось выполнить экспорт: " + e.getMessage());
+            System.err.println("Ошибка: Не удалось выполнить экспорт в " + format + ": " + e.getMessage());
         }
     }
 
-    public void performJsonImport() {
-        DataAggregator importedData = jsonProvider.importData();
-        renewNextIds(importedData);
-        System.out.println("Импорт JSON завершен успешно. Восстановлено объектов: " +
-                        (importedData.getAccounts().size() + importedData.getCategories().size() +
-                        importedData.getOperations().size()));
-    }
-
-    public void performJsonExport() {
-        DataAggregator dataToExport = getDataAggregator();
-
-        try {
-            jsonProvider.exportData(dataToExport);
-            System.out.println("Данные успешно экспортированы в JSON");
-        } catch (Exception e) {
-            System.err.println("Ошибка: Не удалось выполнить экспорт: " + e.getMessage());
+    private IExchangeProvider getProvider(String format) {
+        IExchangeProvider provider = providers.get(format.toLowerCase());
+        if (provider == null) {
+            throw new IllegalArgumentException("Формат " + format + " не поддерживается");
         }
-    }
-
-    public void performYamlImport() {
-        DataAggregator importedData = yamlProvider.importData();
-        renewNextIds(importedData);
-        System.out.println("Импорт YAML завершен успешно. Восстановлено объектов: " +
-                        (importedData.getAccounts().size() + importedData.getCategories().size() +
-                        importedData.getOperations().size()));
-    }
-
-    public void performYamlExport() {
-        DataAggregator dataToExport = getDataAggregator();
-
-        try {
-            yamlProvider.exportData(dataToExport);
-            System.out.println("Данные успешно экспортированы в YAML");
-        } catch (Exception e) {
-            System.err.println("Ошибка: Не удалось выполнить экспорт: " + e.getMessage());
-        }
+        return provider;
     }
 
     private DataAggregator getDataAggregator() {

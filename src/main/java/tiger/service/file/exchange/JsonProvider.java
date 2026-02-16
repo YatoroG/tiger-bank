@@ -35,4 +35,9 @@ public class JsonProvider implements IExchangeProvider {
             throw new RuntimeException("Ошибка: Не удалось прочитать JSON (" + e.getMessage() + ")");
         }
     }
+
+    @Override
+    public String getFormat() {
+        return "json";
+    }
 }

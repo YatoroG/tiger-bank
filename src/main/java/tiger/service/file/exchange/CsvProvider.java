@@ -83,6 +83,11 @@ public class CsvProvider implements IExchangeProvider {
         return data;
     }
 
+    @Override
+    public String getFormat() {
+        return "csv";
+    }
+
     private List<Category> importCategories() throws IOException {
         List<Category> list = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader("categories.csv"))) {

@@ -23,31 +23,31 @@ public class ExchangeHandler {
         int num = Integer.parseInt(scanner.nextLine());
 
         if (num == 1) {
-            exchangeService.performCsvExport();
+            exchangeService.performExport("csv");
             System.out.println("Данные успешно сохранены в файлы *.csv");
         } else if (num == 2) {
             try {
-                exchangeService.performCsvImport();
+                exchangeService.performImport("csv");
                 System.out.println("Данные успешно восстановлены");
             } catch (Exception e) {
                 System.err.println("Ошибка импорта CSV: " + e.getMessage());
             }
         } else if (num == 3) {
-            exchangeService.performJsonExport();
+            exchangeService.performExport("json");
             System.out.println("Данные успешно сохранены в файлы *.json");
         } else if (num == 4) {
             try {
-                exchangeService.performJsonImport();
+                exchangeService.performImport("json");
                 System.out.println("Данные успешно восстановлены");
             } catch (Exception e) {
                 System.err.println("Ошибка импорта JSON: " + e.getMessage());
             }
         } else if (num == 5) {
-            exchangeService.performYamlExport();
+            exchangeService.performExport("yaml");
             System.out.println("Данные успешно сохранены в файлы *.yml");
         } else if (num == 6) {
             try {
-                exchangeService.performYamlImport();
+                exchangeService.performImport("yaml");
                 System.out.println("Данные успешно восстановлены");
             } catch (Exception e) {
                 System.err.println("Ошибка импорта YAML: " + e.getMessage());
