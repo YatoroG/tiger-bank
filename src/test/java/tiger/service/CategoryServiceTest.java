@@ -51,7 +51,7 @@ class CategoryServiceTest {
         categoryService.createCategory("Удаление категории", OperationType.EXPENSE);
         assertNotNull(categoryService.getCategory(1));
         categoryService.deleteCategory(1);
-        assertNull(categoryService.getCategory(1));
+        assertThrows(IllegalArgumentException.class, () -> categoryService.getCategory(1));
         assertEquals(0, categoryService.getAllCategories().size());
     }
 
