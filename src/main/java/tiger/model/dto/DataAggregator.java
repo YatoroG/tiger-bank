@@ -10,7 +10,8 @@ public class DataAggregator {
     private List<Category> categories;
     private List<Operation> operations;
 
-    public DataAggregator() {}
+    public DataAggregator() {
+    }
 
     public DataAggregator(List<BankAccount> accounts,
                           List<Category> categories,

@@ -2,7 +2,6 @@ package tiger.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import tiger.model.dto.CategoryFields;
 import tiger.model.dto.OperationFields;
 
 public class Operation {

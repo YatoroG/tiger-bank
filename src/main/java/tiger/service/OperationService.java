@@ -2,9 +2,7 @@ package tiger.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import org.springframework.stereotype.Service;
 import tiger.model.BankAccount;
 import tiger.model.Category;
@@ -16,8 +14,8 @@ import tiger.repository.CategoryRepository;
 import tiger.repository.OperationRepository;
 import tiger.service.factory.IOperationFactory;
 
-@Service("mainOperationService")
-public class OperationService implements IOperationService {
+@Service
+public class OperationService {
     private final OperationRepository operationRepository;
     private final BankAccountRepository bankAccountRepository;
     private final CategoryRepository categoryRepository;
@@ -33,7 +31,6 @@ public class OperationService implements IOperationService {
         this.factory = factory;
     }
 
-    @Override
     public Operation addOperation(OperationType type, int accountId, BigDecimal amount,
                                   LocalDateTime date, String description, int categoryId) {
         BankAccount bankAccount = bankAccountRepository.getAccount(accountId);
@@ -52,7 +49,6 @@ public class OperationService implements IOperationService {
         return operation;
     }
 
-    @Override
     public void updateAmount(int id, BigDecimal newAmount) {
         Operation operation = searchOperation(id);
         BankAccount account = bankAccountRepository.getAccount(operation.getBankAccountId());
@@ -85,7 +81,6 @@ public class OperationService implements IOperationService {
         operationRepository.update(operation);
     }
 
-    @Override
     public void deleteOperation(int id) {
         Operation operation = searchOperation(id);
         BankAccount account = bankAccountRepository.getAccount(operation.getBankAccountId());
@@ -104,11 +99,10 @@ public class OperationService implements IOperationService {
                 .map(Operation::splitOperation).toList();
     }
 
-    @Override
-    public List<Operation> getLastFiveOperations() {
-        List<Operation> allOperations = new ArrayList<>(operationRepository.getAllOperations().values());
-        int size = allOperations.size();
-        return allOperations.subList(Math.max(0, size - 5), size);
+    public Collection<OperationFields> getLastFiveOperations() {
+        return operationRepository.getAllOperations().values().stream()
+                .skip(Math.max(0, operationRepository.getAllOperations().size() - 5))
+                .map(Operation::splitOperation).toList();
     }
 
     private void updateBalance(BankAccount account, BigDecimal amount, OperationType type) {

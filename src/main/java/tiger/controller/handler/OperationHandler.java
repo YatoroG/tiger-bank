@@ -6,27 +6,32 @@ import org.springframework.stereotype.Component;
 import tiger.controller.utils.InputParser;
 import tiger.model.OperationType;
 import tiger.model.requests.operation.*;
+import tiger.service.command.CommandExecutor;
+import tiger.service.command.operation.*;
 import tiger.service.facade.OperationFacade;
 
 @Component
 public class OperationHandler {
     private final OperationFacade operationFacade;
+    private final CommandExecutor executor;
     private final InputParser input;
 
-    public OperationHandler(OperationFacade operationFacade, InputParser input) {
+    public OperationHandler(OperationFacade operationFacade, CommandExecutor executor, InputParser input) {
         this.operationFacade = operationFacade;
+        this.executor = executor;
         this.input = input;
     }
 
     public void handleOperations() {
-        System.out.println("1. Список последних пяти операций");
-        System.out.println("2. Просмотреть операцию");
-        System.out.println("3. Создать операцию");
-        System.out.println("4. Удалить операцию");
-        System.out.println("5. Обновить сумму операции");
-        System.out.println("6. Обновить категорию операции");
-        System.out.println("7. Обновить дату операции");
-        System.out.println("8. Обновить описание операции");
+        System.out.println("1. Список всех операций");
+        System.out.println("2. Список последних пяти операций");
+        System.out.println("3. Просмотреть операцию");
+        System.out.println("4. Создать операцию");
+        System.out.println("5. Удалить операцию");
+        System.out.println("6. Обновить сумму операции");
+        System.out.println("7. Обновить категорию операции");
+        System.out.println("8. Обновить дату операции");
+        System.out.println("9. Обновить описание операции");
         int num = input.readInt("Введите пункт меню");
 
         switch (num) {
@@ -38,16 +43,25 @@ public class OperationHandler {
                 break;
             }
             case 2: {
+                operationFacade.getLastFive().forEach(o ->
+                        System.out.println(o.id() + ": Счет №" + o.bankAccountId() + ", " +
+                                o.amount() + " [" + o.type() + "] " + o.categoryId() +
+                                ", " + o.description()));
+                break;
+            }
+            case 3: {
                 int id = input.readInt("ID операции");
 
-                var cmd = new GetOperationRequest(id);
-                var operation = operationFacade.getOperation(cmd);
+                var req = new GetOperationRequest(id);
+                var cmd = new GetOperationCommand(operationFacade, req);
+                executor.execute(cmd);
+                var operation = cmd.getResult();
                 System.out.println(operation.id() + ": Счет №" + operation.bankAccountId() + ", " +
                         operation.amount() + " [" + operation.type() + "] " + operation.categoryId() +
                         ", " + operation.description());
                 break;
             }
-            case 3: {
+            case 4: {
                 int accId = input.readInt("ID счета");
                 BigDecimal amount = input.readBigDecimal("Сумма");
                 int type = input.readInt("Тип (1 - Доход, 2 - Расход)");
@@ -58,51 +72,51 @@ public class OperationHandler {
                         type == 1 ? OperationType.INCOME : OperationType.EXPENSE,
                         accId, amount, LocalDateTime.now(), desc, catId
                 );
-                operationFacade.create(cmd);
+                executor.execute(new AddOperationCommand(operationFacade, cmd));
                 System.out.println("Операция добавлена");
-                break;
-            }
-            case 4: {
-                int id = input.readInt("ID операции");
-
-                var cmd = new DeleteOperationRequest(id);
-                operationFacade.delete(cmd);
-                System.out.println("Операция удалена");
                 break;
             }
             case 5: {
                 int id = input.readInt("ID операции");
-                BigDecimal newAmount = input.readBigDecimal("Новая сумма операции");
 
-                var cmd = new UpdateOperationAmountRequest(id, newAmount);
-                operationFacade.updateAmount(cmd);
-                System.out.println("Сумма операции обновлена");
+                var cmd = new DeleteOperationRequest(id);
+                executor.execute(new DeleteOperationCommand(operationFacade, cmd));
+                System.out.println("Операция удалена");
                 break;
             }
             case 6: {
                 int id = input.readInt("ID операции");
-                int newCat = input.readInt("Новая категория операции");
+                BigDecimal newAmount = input.readBigDecimal("Новая сумма операции");
 
-                var cmd = new UpdateOperationCategoryRequest(id, newCat);
-                operationFacade.updateCategory(cmd);
-                System.out.println("Категория операции обновлена");
+                var cmd = new UpdateOperationAmountRequest(id, newAmount);
+                executor.execute(new UpdateOperationAmountCommand(operationFacade, cmd));
+                System.out.println("Сумма операции обновлена");
                 break;
             }
             case 7: {
                 int id = input.readInt("ID операции");
-                LocalDateTime newDate = input.readDate("Новая дата операции");
+                int newCat = input.readInt("Новая категория операции");
 
-                var cmd = new UpdateOperationDateRequest(id, newDate);
-                operationFacade.updateDate(cmd);
-                System.out.println("Дата операции обновлена");
+                var cmd = new UpdateOperationCategoryRequest(id, newCat);
+                executor.execute(new UpdateOperationCategoryCommand(operationFacade, cmd));
+                System.out.println("Категория операции обновлена");
                 break;
             }
             case 8: {
                 int id = input.readInt("ID операции");
+                LocalDateTime newDate = input.readDate("Новая дата операции");
+
+                var cmd = new UpdateOperationDateRequest(id, newDate);
+                executor.execute(new UpdateOperationDateCommand(operationFacade, cmd));
+                System.out.println("Дата операции обновлена");
+                break;
+            }
+            case 9: {
+                int id = input.readInt("ID операции");
                 String newDescription = input.readString("Новое описание операции");
 
                 var cmd = new UpdateOperationDescriptionRequest(id, newDescription);
-                operationFacade.updateDescription(cmd);
+                executor.execute(new UpdateOperationDescriptionCommand(operationFacade, cmd));
                 System.out.println("Описание операции обновлено");
                 break;
             }

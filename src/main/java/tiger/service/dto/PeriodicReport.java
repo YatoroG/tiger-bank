@@ -5,4 +5,5 @@ import java.time.LocalDateTime;
 
 public record PeriodicReport(LocalDateTime from, LocalDateTime to,
                              BigDecimal totalIncome, BigDecimal totalExpense,
-                             BigDecimal difference) {}
+                             BigDecimal difference) {
+}

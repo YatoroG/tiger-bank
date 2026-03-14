@@ -1,6 +1,5 @@
 package tiger.controller.handler;
 
-import java.util.Scanner;
 import org.springframework.stereotype.Component;
 import tiger.controller.utils.InputParser;
 import tiger.service.file.exchange.ExchangeService;

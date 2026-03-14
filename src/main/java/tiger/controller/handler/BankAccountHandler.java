@@ -4,15 +4,19 @@ import java.math.BigDecimal;
 import org.springframework.stereotype.Component;
 import tiger.controller.utils.InputParser;
 import tiger.model.requests.account.*;
+import tiger.service.command.CommandExecutor;
+import tiger.service.command.account.*;
 import tiger.service.facade.BankAccountFacade;
 
 @Component
 public class BankAccountHandler {
     private final BankAccountFacade accountFacade;
+    private final CommandExecutor executor;
     private final InputParser input;
 
-    public BankAccountHandler(BankAccountFacade accountFacade, InputParser input) {
+    public BankAccountHandler(BankAccountFacade accountFacade, CommandExecutor executor, InputParser input) {
         this.accountFacade = accountFacade;
+        this.executor = executor;
         this.input = input;
     }
 
@@ -33,10 +37,12 @@ public class BankAccountHandler {
                 break;
             }
             case 2: {
-                int id = input.readInt("ID счета");
+                int id = input.readInt("Номер счета");
 
-                var cmd = new GetAccountRequest(id);
-                var account = accountFacade.getAccount(cmd);
+                var req = new GetAccountRequest(id);
+                var cmd = new GetAccountCommand(accountFacade, req);
+                executor.execute(cmd);
+                var account = cmd.getResult();
                 System.out.println(account.id() + ": [" +
                         account.name() + "] " +
                         account.balance());
@@ -47,24 +53,24 @@ public class BankAccountHandler {
                 BigDecimal balance = input.readBigDecimal("Начальный баланс");
 
                 var cmd = new CreateAccountRequest(name, balance);
-                accountFacade.create(cmd);
+                executor.execute(new CreateAccountCommand(accountFacade, cmd));
                 System.out.println("Счет добавлен");
                 break;
             }
             case 4: {
-                int id = input.readInt("ID счета");
+                int id = input.readInt("Номер счета");
 
                 var cmd = new DeleteAccountRequest(id);
-                accountFacade.delete(cmd);
+                executor.execute(new DeleteAccountCommand(accountFacade, cmd));
                 System.out.println("Счет удален");
                 break;
             }
             case 5: {
-                int id = input.readInt("ID счета");
+                int id = input.readInt("Номер счета");
                 String name = input.readString("Новое наименование");
 
                 var cmd = new UpdateAccountNameRequest(id, name);
-                accountFacade.updateName(cmd);
+                executor.execute(new UpdateAccountNameCommand(accountFacade, cmd));
                 System.out.println("Наименование счета обновлено");
                 break;
             }

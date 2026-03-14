@@ -4,15 +4,19 @@ import org.springframework.stereotype.Component;
 import tiger.controller.utils.InputParser;
 import tiger.model.OperationType;
 import tiger.model.requests.category.*;
+import tiger.service.command.CommandExecutor;
+import tiger.service.command.category.*;
 import tiger.service.facade.CategoryFacade;
 
 @Component
 public class CategoryHandler {
     private final CategoryFacade categoryFacade;
+    private final CommandExecutor executor;
     private final InputParser input;
 
-    public CategoryHandler(CategoryFacade categoryFacade, InputParser input) {
+    public CategoryHandler(CategoryFacade categoryFacade, CommandExecutor executor, InputParser input) {
         this.categoryFacade = categoryFacade;
+        this.executor = executor;
         this.input = input;
     }
 
@@ -35,8 +39,10 @@ public class CategoryHandler {
             case 2: {
                 int id = input.readInt("ID категории");
 
-                var cmd = new GetCategoryRequest(id);
-                var category = categoryFacade.getCategory(cmd);
+                var req = new GetCategoryRequest(id);
+                var cmd = new GetCategoryCommand(categoryFacade, req);
+                executor.execute(cmd);
+                var category = cmd.getResult();
                 System.out.println(category.id() + ": [" +
                         category.type() + "] " +
                         category.name());
@@ -47,16 +53,14 @@ public class CategoryHandler {
                 String name = input.readString("Название категории");
 
                 var cmd = new CreateCategoryRequest(name, OperationType.fromInt(type - 1));
-                categoryFacade.create(cmd);
-                System.out.println("Категория добавлена");
+                executor.execute(new CreateCategoryCommand(categoryFacade, cmd));
                 break;
             }
             case 4: {
                 int id = input.readInt("ID категории");
 
                 var cmd = new DeleteCategoryRequest(id);
-                categoryFacade.delete(cmd);
-                System.out.println("Категория удалена");
+                executor.execute(new DeleteCategoryCommand(categoryFacade, cmd));
                 break;
             }
             case 5: {
@@ -64,8 +68,7 @@ public class CategoryHandler {
                 String name = input.readString("Новое название категории");
 
                 var cmd = new UpdateCategoryNameRequest(id, name);
-                categoryFacade.updateName(cmd);
-                System.out.println("Название категории обновлено");
+                executor.execute(new UpdateCategoryNameCommand(categoryFacade, cmd));
                 break;
             }
             case 6: {
@@ -73,8 +76,7 @@ public class CategoryHandler {
                 int type = input.readInt("Тип категории (1 - Доход, 2 - Расход)");
 
                 var cmd = new UpdateCategoryTypeRequest(id, OperationType.fromInt(type - 1));
-                categoryFacade.updateType(cmd);
-                System.out.println("Тип категории обновлен");
+                executor.execute(new UpdateCategoryTypeCommand(categoryFacade, cmd));
                 break;
             }
             default:

@@ -43,6 +43,10 @@ public class OperationFacade {
         return operationService.getAllOperations();
     }
 
+    public Collection<OperationFields> getLastFive() {
+        return operationService.getLastFiveOperations();
+    }
+
     public OperationFields getOperation(GetOperationRequest request) {
         return operationService.getOperation(request.id());
     }

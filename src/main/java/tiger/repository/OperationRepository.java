@@ -34,7 +34,7 @@ public class OperationRepository {
     public List<Map.Entry<Integer, Operation>> getAccountOperations(int accountId) {
         return operations.entrySet().stream().filter(integerOperationEntry
                         -> integerOperationEntry.getValue().getBankAccountId() == accountId)
-                        .collect(Collectors.toList());
+                .collect(Collectors.toList());
     }
 
     public Map<Integer, Operation> getAllOperations() {
