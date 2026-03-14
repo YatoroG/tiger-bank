@@ -6,17 +6,24 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 import tiger.controller.utils.InputParser;
 import tiger.model.OperationType;
-import tiger.service.ReportService;
+import tiger.model.requests.report.GroupedReportRequest;
+import tiger.model.requests.report.PeriodicReportRequest;
+import tiger.service.command.CommandExecutor;
+import tiger.service.command.report.GroupedReportCommand;
+import tiger.service.command.report.PeriodicReportCommand;
 import tiger.service.dto.GroupedCategoriesReport;
 import tiger.service.dto.PeriodicReport;
+import tiger.service.facade.ReportFacade;
 
 @Component
 public class ReportHandler {
-    private final ReportService reportService;
+    private final ReportFacade reportFacade;
+    private final CommandExecutor executor;
     private final InputParser input;
 
-    public ReportHandler(ReportService reportService, InputParser input) {
-        this.reportService = reportService;
+    public ReportHandler(ReportFacade reportFacade, CommandExecutor executor, InputParser input) {
+        this.reportFacade = reportFacade;
+        this.executor = executor;
         this.input = input;
     }
 
@@ -30,7 +37,11 @@ public class ReportHandler {
             LocalDateTime from = input.readDate("Период с (ДД.ММ.ГГГГ)");
             LocalDateTime to = input.readDate("Период до (ДД.ММ.ГГГГ)");
 
-            PeriodicReport pr = reportService.reportDiffForSelectedPeriod(accId, from, to);
+            var cmd = new PeriodicReportRequest(accId, from, to);
+            var req = new PeriodicReportCommand(reportFacade, cmd);
+            executor.execute(req);
+            PeriodicReport pr = req.getResult();
+
             System.out.println("ОТЧЕТ О ДОХОДАХ И РАСХОДАХ ЗА ПЕРИОД С " + pr.from() + " ПО " + pr.to());
             System.out.println("Общий доход: " + pr.totalIncome());
             System.out.println("Общие траты: " + pr.totalExpense());
@@ -39,8 +50,11 @@ public class ReportHandler {
             int accId = input.readInt("Номер счета");
             int typeId = input.readInt("Тип (1 - Доход, 2 - Расход)");
 
-            GroupedCategoriesReport gcr = reportService.reportGroupedCategories(accId,
-                    OperationType.fromInt(typeId - 1));
+            var cmd = new GroupedReportRequest(accId, OperationType.fromInt(typeId - 1));
+            var req = new GroupedReportCommand(reportFacade, cmd);
+            executor.execute(req);
+            GroupedCategoriesReport gcr = req.getResult();
+
             System.out.println("ОТЧЕТ О " + gcr.type().toString().toUpperCase() + "АХ ПО КАТЕГОРИЯМ");
 
             if (gcr.categoryTotals().isEmpty()) {

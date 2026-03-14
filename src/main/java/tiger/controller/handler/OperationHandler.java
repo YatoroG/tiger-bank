@@ -73,7 +73,6 @@ public class OperationHandler {
                         accId, amount, LocalDateTime.now(), desc, catId
                 );
                 executor.execute(new AddOperationCommand(operationFacade, cmd));
-                System.out.println("Операция добавлена");
                 break;
             }
             case 5: {
@@ -81,7 +80,6 @@ public class OperationHandler {
 
                 var cmd = new DeleteOperationRequest(id);
                 executor.execute(new DeleteOperationCommand(operationFacade, cmd));
-                System.out.println("Операция удалена");
                 break;
             }
             case 6: {
@@ -90,7 +88,6 @@ public class OperationHandler {
 
                 var cmd = new UpdateOperationAmountRequest(id, newAmount);
                 executor.execute(new UpdateOperationAmountCommand(operationFacade, cmd));
-                System.out.println("Сумма операции обновлена");
                 break;
             }
             case 7: {
@@ -99,7 +96,6 @@ public class OperationHandler {
 
                 var cmd = new UpdateOperationCategoryRequest(id, newCat);
                 executor.execute(new UpdateOperationCategoryCommand(operationFacade, cmd));
-                System.out.println("Категория операции обновлена");
                 break;
             }
             case 8: {
@@ -108,7 +104,6 @@ public class OperationHandler {
 
                 var cmd = new UpdateOperationDateRequest(id, newDate);
                 executor.execute(new UpdateOperationDateCommand(operationFacade, cmd));
-                System.out.println("Дата операции обновлена");
                 break;
             }
             case 9: {
@@ -117,7 +112,6 @@ public class OperationHandler {
 
                 var cmd = new UpdateOperationDescriptionRequest(id, newDescription);
                 executor.execute(new UpdateOperationDescriptionCommand(operationFacade, cmd));
-                System.out.println("Описание операции обновлено");
                 break;
             }
             default:

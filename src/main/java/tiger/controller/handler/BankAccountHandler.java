@@ -54,7 +54,6 @@ public class BankAccountHandler {
 
                 var cmd = new CreateAccountRequest(name, balance);
                 executor.execute(new CreateAccountCommand(accountFacade, cmd));
-                System.out.println("Счет добавлен");
                 break;
             }
             case 4: {
@@ -62,7 +61,6 @@ public class BankAccountHandler {
 
                 var cmd = new DeleteAccountRequest(id);
                 executor.execute(new DeleteAccountCommand(accountFacade, cmd));
-                System.out.println("Счет удален");
                 break;
             }
             case 5: {
@@ -71,7 +69,6 @@ public class BankAccountHandler {
 
                 var cmd = new UpdateAccountNameRequest(id, name);
                 executor.execute(new UpdateAccountNameCommand(accountFacade, cmd));
-                System.out.println("Наименование счета обновлено");
                 break;
             }
             default:

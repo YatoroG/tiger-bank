@@ -9,7 +9,7 @@ public class CommandExecutor {
         try {
             command.execute();
             double duration = (System.nanoTime() - startTime) / 1000000.0;
-            System.out.printf("[%.3f мс%n] Команда \" '%s' \" выполнена",
+            System.out.printf("[%.3f мс] Команда '%s' выполнена%n",
                     duration, command.getName());
         } catch (Exception e) {
             System.out.println(command.getName() + ": " + e.getMessage());
