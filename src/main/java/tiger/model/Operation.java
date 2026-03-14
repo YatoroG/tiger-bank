@@ -2,6 +2,8 @@ package tiger.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import tiger.model.dto.CategoryFields;
+import tiger.model.dto.OperationFields;
 
 public class Operation {
     private int operationId;
@@ -72,5 +74,10 @@ public class Operation {
 
     public void setDate(LocalDateTime date) {
         this.date = date;
+    }
+
+    public OperationFields splitOperation() {
+        return new OperationFields(this.operationId, this.type, this.bankAccountId,
+                this.amount, this.date, this.description, this.categoryId);
     }
 }

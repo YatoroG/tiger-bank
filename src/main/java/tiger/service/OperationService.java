@@ -10,23 +10,27 @@ import tiger.model.BankAccount;
 import tiger.model.Category;
 import tiger.model.Operation;
 import tiger.model.OperationType;
+import tiger.model.dto.OperationFields;
 import tiger.repository.BankAccountRepository;
 import tiger.repository.CategoryRepository;
 import tiger.repository.OperationRepository;
+import tiger.service.factory.IOperationFactory;
 
 @Service("mainOperationService")
 public class OperationService implements IOperationService {
     private final OperationRepository operationRepository;
     private final BankAccountRepository bankAccountRepository;
     private final CategoryRepository categoryRepository;
-    private int nextOperationId = 1;
+    private final IOperationFactory factory;
 
     public OperationService(OperationRepository operationRepository,
                             BankAccountRepository bankAccountRepository,
-                            CategoryRepository categoryRepository) {
+                            CategoryRepository categoryRepository,
+                            IOperationFactory factory) {
         this.operationRepository = operationRepository;
         this.bankAccountRepository = bankAccountRepository;
         this.categoryRepository = categoryRepository;
+        this.factory = factory;
     }
 
     @Override
@@ -42,12 +46,7 @@ public class OperationService implements IOperationService {
             throw new IllegalArgumentException("Ошибка: Категория с " + categoryId + " не найдена");
         }
 
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Ошибка: Сумма не может быть пустой или меньше 0");
-        }
-
-        Operation operation = new Operation(nextOperationId++, type, accountId, amount, date,
-                description, categoryId);
+        Operation operation = factory.addOperation(type, accountId, amount, date, description, categoryId);
         operationRepository.add(operation);
         updateBalance(bankAccount, amount, type);
         return operation;
@@ -55,7 +54,7 @@ public class OperationService implements IOperationService {
 
     @Override
     public void updateAmount(int id, BigDecimal newAmount) {
-        Operation operation = getOperation(id);
+        Operation operation = searchOperation(id);
         BankAccount account = bankAccountRepository.getAccount(operation.getBankAccountId());
         updateBalance(account, operation.getAmount(),
                 operation.getType() == OperationType.INCOME ? OperationType.EXPENSE : OperationType.INCOME);
@@ -69,41 +68,40 @@ public class OperationService implements IOperationService {
             throw new IllegalArgumentException("Ошибка: Категория с " + newCategoryId + " не найдена");
         }
 
-        Operation operation = getOperation(id);
+        Operation operation = searchOperation(id);
         operation.setCategory(newCategoryId);
         operationRepository.update(operation);
     }
 
     public void updateDescription(int id, String newDescription) {
-        Operation operation = getOperation(id);
+        Operation operation = searchOperation(id);
         operation.setDescription(newDescription);
         operationRepository.update(operation);
     }
 
     public void updateDate(int id, LocalDateTime newDate) {
-        Operation operation = getOperation(id);
+        Operation operation = searchOperation(id);
         operation.setDate(newDate);
         operationRepository.update(operation);
     }
 
     @Override
     public void deleteOperation(int id) {
-        Operation operation = getOperation(id);
+        Operation operation = searchOperation(id);
         BankAccount account = bankAccountRepository.getAccount(operation.getBankAccountId());
         updateBalance(account, operation.getAmount(),
                 operation.getType() == OperationType.INCOME ? OperationType.EXPENSE : OperationType.INCOME);
         operationRepository.delete(id);
     }
 
-    public Operation getOperation(int id) {
-        if (!operationRepository.hasOperation(id)) {
-            throw new IllegalArgumentException("Ошибка: Операция с id " + id + " не найдена");
-        }
-        return operationRepository.getOperation(id);
+    public OperationFields getOperation(int id) {
+        Operation operation = searchOperation(id);
+        return operation.splitOperation();
     }
 
-    public Collection<Operation> getAllOperations() {
-        return operationRepository.getAllOperations().values();
+    public Collection<OperationFields> getAllOperations() {
+        return operationRepository.getAllOperations().values().stream()
+                .map(Operation::splitOperation).toList();
     }
 
     @Override
@@ -122,7 +120,14 @@ public class OperationService implements IOperationService {
         bankAccountRepository.update(account);
     }
 
+    private Operation searchOperation(int id) {
+        if (!operationRepository.hasOperation(id)) {
+            throw new IllegalArgumentException("Ошибка: Операция с id " + id + " не найдена");
+        }
+        return operationRepository.getOperation(id);
+    }
+
     public void checkNextId(int maxOpId) {
-        this.nextOperationId = maxOpId + 1;
+        factory.checkNextId(maxOpId);
     }
 }

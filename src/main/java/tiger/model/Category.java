@@ -1,5 +1,7 @@
 package tiger.model;
 
+import tiger.model.dto.CategoryFields;
+
 public class Category {
     private int categoryId;
     private OperationType operationType;
@@ -32,5 +34,9 @@ public class Category {
 
     public void setCategoryType(OperationType newType) {
         this.operationType = newType;
+    }
+
+    public CategoryFields splitCategory() {
+        return new CategoryFields(this.categoryId, this.name, this.operationType);
     }
 }

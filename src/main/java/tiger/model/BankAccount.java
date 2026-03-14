@@ -1,6 +1,7 @@
 package tiger.model;
 
 import java.math.BigDecimal;
+import tiger.model.dto.BankAccountFields;
 
 public class BankAccount {
     private int accountId;
@@ -40,5 +41,9 @@ public class BankAccount {
 
     public void setBalance(BigDecimal newBalance) {
         this.balance = newBalance;
+    }
+
+    public BankAccountFields splitAccount() {
+        return new BankAccountFields(this.accountId, this.name, this.balance);
     }
 }

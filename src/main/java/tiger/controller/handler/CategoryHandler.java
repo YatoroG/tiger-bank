@@ -1,35 +1,84 @@
 package tiger.controller.handler;
 
-import java.util.Scanner;
 import org.springframework.stereotype.Component;
+import tiger.controller.utils.InputParser;
 import tiger.model.OperationType;
-import tiger.service.CategoryService;
+import tiger.model.requests.category.*;
+import tiger.service.facade.CategoryFacade;
 
 @Component
 public class CategoryHandler {
-    private final CategoryService categoryService;
-    private final Scanner scanner = new Scanner(System.in);
+    private final CategoryFacade categoryFacade;
+    private final InputParser input;
 
-    public CategoryHandler(CategoryService categoryService) {
-        this.categoryService = categoryService;
+    public CategoryHandler(CategoryFacade categoryFacade, InputParser input) {
+        this.categoryFacade = categoryFacade;
+        this.input = input;
     }
 
     public void handleCategories() {
-        System.out.println("1. Создать категорию");
-        System.out.println("2. Список категорий");
-        int num = Integer.parseInt(scanner.nextLine());
+        System.out.println("1. Список категорий");
+        System.out.println("2. Посмотреть категорию");
+        System.out.println("3. Создать категорию");
+        System.out.println("4. Удалить категорию");
+        System.out.println("5. Обновить название категории");
+        System.out.println("6. Обновить тип категории");
+        int num = input.readInt("Введите пункт меню");
 
-        if (num == 1) {
-            System.out.print("Тип категории (1 - Доход, 2 - Расход): ");
-            int type = Integer.parseInt(scanner.nextLine());
-            System.out.print("Название категории: ");
-            String name = scanner.nextLine();
+        switch (num) {
+            case 1:
+                categoryFacade.getAll().forEach(c ->
+                        System.out.println(c.id() + ": [" +
+                                c.type() + "] " +
+                                c.name()));
+                break;
+            case 2: {
+                int id = input.readInt("ID категории");
 
-            categoryService.createCategory(name, OperationType.fromInt(type - 1));
-            System.out.println("Категория добавлена");
-        } else if (num == 2) {
-            categoryService.getAllCategories().forEach(c ->
-                    System.out.println(c.getCategoryId() + ": [" + c.getCategoryType() + "] " + c.getName()));
+                var cmd = new GetCategoryRequest(id);
+                var category = categoryFacade.getCategory(cmd);
+                System.out.println(category.id() + ": [" +
+                        category.type() + "] " +
+                        category.name());
+                break;
+            }
+            case 3: {
+                int type = input.readInt("Тип категории (1 - Доход, 2 - Расход)");
+                String name = input.readString("Название категории");
+
+                var cmd = new CreateCategoryRequest(name, OperationType.fromInt(type - 1));
+                categoryFacade.create(cmd);
+                System.out.println("Категория добавлена");
+                break;
+            }
+            case 4: {
+                int id = input.readInt("ID категории");
+
+                var cmd = new DeleteCategoryRequest(id);
+                categoryFacade.delete(cmd);
+                System.out.println("Категория удалена");
+                break;
+            }
+            case 5: {
+                int id = input.readInt("ID категории");
+                String name = input.readString("Новое название категории");
+
+                var cmd = new UpdateCategoryNameRequest(id, name);
+                categoryFacade.updateName(cmd);
+                System.out.println("Название категории обновлено");
+                break;
+            }
+            case 6: {
+                int id = input.readInt("ID категории");
+                int type = input.readInt("Тип категории (1 - Доход, 2 - Расход)");
+
+                var cmd = new UpdateCategoryTypeRequest(id, OperationType.fromInt(type - 1));
+                categoryFacade.updateType(cmd);
+                System.out.println("Тип категории обновлен");
+                break;
+            }
+            default:
+                System.out.print("Введите пункт меню");
         }
     }
 }

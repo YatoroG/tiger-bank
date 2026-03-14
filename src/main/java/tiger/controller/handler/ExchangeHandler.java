@@ -2,15 +2,17 @@ package tiger.controller.handler;
 
 import java.util.Scanner;
 import org.springframework.stereotype.Component;
+import tiger.controller.utils.InputParser;
 import tiger.service.file.exchange.ExchangeService;
 
 @Component
 public class ExchangeHandler {
     private final ExchangeService exchangeService;
-    private final Scanner scanner = new Scanner(System.in);
+    private final InputParser input;
 
-    public ExchangeHandler(ExchangeService exchangeService) {
+    public ExchangeHandler(ExchangeService exchangeService, InputParser input) {
         this.exchangeService = exchangeService;
+        this.input = input;
     }
 
     public void handleExchange() {
@@ -20,7 +22,7 @@ public class ExchangeHandler {
         System.out.println("4. Импорт из JSON");
         System.out.println("5. Экспорт в YAML");
         System.out.println("6. Импорт из YAML");
-        int num = Integer.parseInt(scanner.nextLine());
+        int num = input.readInt("Введите пункт меню");
 
         if (num == 1) {
             exchangeService.performExport("csv");

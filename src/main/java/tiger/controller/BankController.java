@@ -1,8 +1,8 @@
 package tiger.controller;
 
-import java.util.Scanner;
 import org.springframework.stereotype.Controller;
 import tiger.controller.handler.*;
+import tiger.controller.utils.InputParser;
 
 @Controller
 public class BankController {
@@ -12,16 +12,17 @@ public class BankController {
     private final ReportHandler reportHandler;
     private final ExchangeHandler exchangeHandler;
 
-    private final Scanner scanner = new Scanner(System.in);
+    private final InputParser input;
 
     public BankController(BankAccountHandler bankAccountHandler, CategoryHandler categoryHandler,
                           OperationHandler operationHandler, ReportHandler reportHandler,
-                          ExchangeHandler exchangeHandler) {
+                          ExchangeHandler exchangeHandler, InputParser input) {
         this.bankAccountHandler = bankAccountHandler;
         this.categoryHandler = categoryHandler;
         this.operationHandler = operationHandler;
         this.reportHandler = reportHandler;
         this.exchangeHandler = exchangeHandler;
+        this.input = input;
     }
 
     public void start() {
@@ -29,14 +30,14 @@ public class BankController {
         while (true) {
             System.out.println();
             System.out.println("--- ТИГРБАНК. УЧЕТ ФИНАНСОВ ---");
-            System.out.println("1. Счета (Создать/Список)");
-            System.out.println("2. Категории (Создать/Список)");
-            System.out.println("3. Операции (Создать/Список)");
+            System.out.println("1. Счета");
+            System.out.println("2. Категории");
+            System.out.println("3. Операции");
             System.out.println("4. Аналитика (Все операции/По категориям)");
             System.out.println("5. Данные (Импорт/Экспорт)");
             System.out.println("0. Выход");
 
-            int num = Integer.parseInt(scanner.nextLine());
+            int num = input.readInt("Введите пункт меню");
             if (num == 0) break;
 
             switch (num) {

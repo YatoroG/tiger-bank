@@ -4,29 +4,27 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import org.springframework.stereotype.Service;
 import tiger.model.BankAccount;
+import tiger.model.dto.BankAccountFields;
 import tiger.repository.BankAccountRepository;
+import tiger.service.factory.IBankAccountFactory;
 
 @Service
 public class BankAccountService {
     private final BankAccountRepository repository;
-    private int nextAccountId = 1;
+    private final IBankAccountFactory factory;
 
-    public BankAccountService(BankAccountRepository repository) {
+    public BankAccountService(BankAccountRepository repository, IBankAccountFactory factory) {
         this.repository = repository;
+        this.factory = factory;
     }
 
     public void createAccount(String name, BigDecimal balance) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Ошибка: Название счета не может быть пустым");
-        }
-
-        BankAccount account = (balance == null) ? new BankAccount(nextAccountId++, name)
-                : new BankAccount(nextAccountId++, name, balance);
+        BankAccount account = factory.createAccount(name, balance);
         repository.add(account);
     }
 
     public void updateAccountName(int id, String newName) {
-        BankAccount account = getAccount(id);
+        BankAccount account = searchAccount(id);
         account.setName(newName);
         repository.update(account);
     }
@@ -38,18 +36,25 @@ public class BankAccountService {
         repository.delete(id);
     }
 
-    public BankAccount getAccount(int id) {
+    public BankAccountFields getAccount(int id) {
+        BankAccount account = searchAccount(id);
+        return account.splitAccount();
+    }
+
+    public Collection<BankAccountFields> getAllAccounts() {
+        return repository.getAllAccounts().values().stream()
+                .map(BankAccount::splitAccount).toList();
+    }
+
+    public void checkNextId(int maxAccId) {
+        factory.checkNextId(maxAccId);
+    }
+
+    private BankAccount searchAccount(int id) {
         if (!repository.hasAccount(id)) {
             throw new IllegalArgumentException("Ошибка: Счет с ID " + id + " не найден");
         }
         return repository.getAccount(id);
     }
 
-    public Collection<BankAccount> getAllAccounts() {
-        return repository.getAllAccounts().values();
-    }
-
-    public void checkNextId(int maxAccId) {
-        this.nextAccountId = maxAccId + 1;
-    }
 }

@@ -14,6 +14,7 @@ import tiger.model.OperationType;
 import tiger.repository.BankAccountRepository;
 import tiger.repository.CategoryRepository;
 import tiger.repository.OperationRepository;
+import tiger.service.factory.IOperationFactory;
 
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,13 +24,14 @@ public class OperationServiceTest {
     private BankAccountRepository accountRepository;
     private CategoryRepository categoryRepository;
     private OperationRepository operationRepository;
+    private IOperationFactory operationFactory;
 
     @BeforeEach
     void setUp() {
         accountRepository = new BankAccountRepository();
         categoryRepository = new CategoryRepository();
         operationRepository = new OperationRepository();
-        operationService = new OperationService(operationRepository, accountRepository, categoryRepository);
+        operationService = new OperationService(operationRepository, accountRepository, categoryRepository, operationFactory);
 
         accountRepository.add(new BankAccount(1, "Основной счет", new BigDecimal("100000.00")));
         categoryRepository.add(new Category(1, "Зарплата", OperationType.INCOME));
