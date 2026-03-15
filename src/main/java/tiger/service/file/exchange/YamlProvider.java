@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import tiger.model.dto.DataAggregator;
 
 @Component
-public class YamlProvider implements IExchangeProvider {
+public class YamlProvider extends ExchangeProvider {
     private final ObjectMapper objectMapper;
 
     public YamlProvider() {
@@ -20,21 +20,13 @@ public class YamlProvider implements IExchangeProvider {
     }
 
     @Override
-    public void exportData(DataAggregator data) {
-        try {
-            objectMapper.writerWithDefaultPrettyPrinter().writeValue(new File("tiger.yml"), data);
-        } catch (IOException e) {
-            throw new RuntimeException("Ошибка: Не удалось сохранить в YAML (" + e.getMessage() + ")");
-        }
+    protected void writeData(DataAggregator data, File file) throws IOException {
+        objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, data);
     }
 
     @Override
-    public DataAggregator importData() {
-        try {
-            return objectMapper.readValue(new File("tiger.yml"), DataAggregator.class);
-        } catch (IOException e) {
-            throw new RuntimeException("Ошибка: Не удалось прочитать YAML (" + e.getMessage() + ")");
-        }
+    protected DataAggregator readData(File file) throws IOException {
+        return objectMapper.readValue(file, DataAggregator.class);
     }
 
     @Override

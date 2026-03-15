@@ -3,7 +3,6 @@ package tiger.service.file.exchange;
 import java.io.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Component;
 import tiger.model.BankAccount;
@@ -13,73 +12,22 @@ import tiger.model.OperationType;
 import tiger.model.dto.DataAggregator;
 
 @Component
-public class CsvProvider implements IExchangeProvider {
+public class CsvProvider extends ExchangeProvider {
     @Override
-    public void exportData(DataAggregator data) {
-        exportBankAccounts(data);
-        exportOperations(data);
-        exportCategory(data);
-    }
-
-    private void exportBankAccounts(DataAggregator data) {
-        try (BufferedWriter accountWriter = new BufferedWriter(new FileWriter("accounts.csv"))) {
-            accountWriter.write("id,name,balance");
-            accountWriter.newLine();
-
-            for (BankAccount account : data.getAccounts()) {
-                accountWriter.write(String.format("%d,%s,%s", account.getAccountId(),
-                        account.getName(), account.getBalance()));
-                accountWriter.newLine();
-            }
-        } catch (IOException e) {
-            System.err.println("Ошибка: Не удалось сохранить счета в CSV (" + e.getMessage() + ")");
-        }
-    }
-
-    private void exportOperations(DataAggregator data) {
-        try (BufferedWriter operationWriter = new BufferedWriter(new FileWriter("operations.csv"))) {
-            operationWriter.write("id,type,account_id,amount,date,desc,category_id");
-            operationWriter.newLine();
-
-            for (Operation operation : data.getOperations()) {
-                operationWriter.write(String.format("%d,%s,%d,%s,%s,%s,%d",
-                        operation.getOperationId(), operation.getType(), operation.getBankAccountId(),
-                        operation.getAmount(), operation.getDate(), operation.getDescription(),
-                        operation.getCategoryId()));
-                operationWriter.newLine();
-            }
-        } catch (IOException e) {
-            System.err.println("Ошибка: Не удалось сохранить операции в CSV (" + e.getMessage() + ")");
-        }
-    }
-
-    private void exportCategory(DataAggregator data) {
-        try (BufferedWriter categoryWriter = new BufferedWriter(new FileWriter("categories.csv"))) {
-            categoryWriter.write("id,name,type");
-            categoryWriter.newLine();
-
-            for (Category category : data.getCategories()) {
-                categoryWriter.write(String.format("%d,%s,%s", category.getCategoryId(),
-                        category.getName(), category.getCategoryType().name()));
-                categoryWriter.newLine();
-            }
-        } catch (IOException e) {
-            System.err.println("Ошибка: Не удалось сохранить категории в CSV (" + e.getMessage() + ")");
+    protected void writeData(DataAggregator data, File file) throws IOException {
+        try (PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(file)))) {
+            exportBankAccounts(writer, data.getAccounts());
+            exportCategories(writer, data.getCategories());
+            exportOperations(writer, data.getOperations());
         }
     }
 
     @Override
-    public DataAggregator importData() {
+    protected DataAggregator readData(File file) throws IOException {
         DataAggregator data = new DataAggregator();
-        try {
-            data.setCategories(importCategories());
-            data.setAccounts(importBankAccounts());
-            data.setOperations(importOperations());
-        } catch (IOException | RuntimeException e) {
-            System.err.println("Ошибка: Невозможно выполнить импорт (" + e.getMessage() + ")");
-            throw new RuntimeException("Импорт прерван");
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            importFile(reader, data);
         }
-
         return data;
     }
 
@@ -88,60 +36,73 @@ public class CsvProvider implements IExchangeProvider {
         return "csv";
     }
 
-    private List<Category> importCategories() throws IOException {
-        List<Category> list = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader("categories.csv"))) {
-            String line = reader.readLine();
-            if (line == null) throw new IOException("Файл categories.csv пуст");
-
-            while ((line = reader.readLine()) != null) {
-                String[] col = line.split(",");
-                Category category = new Category(Integer.parseInt(col[0]), col[1],
-                        OperationType.fromStr(col[2]));
-                list.add(category);
-            }
-        } catch (RuntimeException e) {
-            throw new RuntimeException("Категории");
-        }
-        return list;
+    private void exportBankAccounts(PrintWriter writer, List<BankAccount> accounts) {
+        writer.println("SECTION:ACCOUNTS");
+        writer.println("id,name,balance");
+        accounts.forEach(a -> writer.printf("%d,%s,%s%n",
+                a.getAccountId(), a.getName(),
+                a.getBalance()));
     }
 
-    private List<BankAccount> importBankAccounts() throws IOException {
-        List<BankAccount> list = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader("accounts.csv"))) {
-            String line = reader.readLine();
-            if (line == null) throw new IOException("Файл accounts.csv пуст");
-
-            while ((line = reader.readLine()) != null) {
-                String[] col = line.split(",");
-                BankAccount acc = new BankAccount(Integer.parseInt(col[0]), col[1], new BigDecimal(col[2]));
-                list.add(acc);
-            }
-        }
-        return list;
+    private void exportOperations(PrintWriter writer, List<Operation> operations) {
+        writer.println("SECTION:OPERATIONS");
+        writer.println("id,type,account_id,amount,date,desc,category_id");
+        operations.forEach(o -> writer.printf("%d,%s,%d,%s,%s,%s,%d%n",
+                o.getOperationId(), o.getType(), o.getBankAccountId(),
+                o.getAmount(), o.getDate(), o.getDescription(),
+                o.getCategoryId()));
     }
 
-    private List<Operation> importOperations() throws IOException {
-        List<Operation> list = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader("operations.csv"))) {
-            reader.readLine();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] col = line.split(",");
-                Operation op = new Operation(
-                        Integer.parseInt(col[0]),
-                        OperationType.fromStr(col[1]),
-                        Integer.parseInt(col[2]),
-                        new BigDecimal(col[3]),
-                        LocalDateTime.parse(col[4]),
-                        col[5],
-                        Integer.parseInt(col[6])
-                );
-                list.add(op);
+    private void exportCategories(PrintWriter writer, List<Category> categories) {
+        writer.println("SECTION:CATEGORIES");
+        writer.println("id,name,type");
+        categories.forEach(c -> writer.printf("%d,%s,%s%n",
+                c.getCategoryId(), c.getName(),
+                c.getCategoryType().name()));
+    }
+
+    private void importFile(BufferedReader reader, DataAggregator data) throws IOException {
+        String line;
+        String currentSection = "";
+        while ((line = reader.readLine()) != null) {
+            if (line.startsWith("SECTION:")) {
+                currentSection = line;
+                continue;
             }
-        } catch (RuntimeException e) {
-            throw new RuntimeException("Операции");
+
+            if (line.startsWith("id,")) {
+                continue;
+            }
+
+            switch (currentSection) {
+                case "SECTION:ACCOUNTS" -> data.getAccounts().add(importBankAccounts(line));
+                case "SECTION:CATEGORIES" -> data.getCategories().add(importCategories(line));
+                case "SECTION:OPERATIONS" -> data.getOperations().add(importOperations(line));
+            }
         }
-        return list;
+    }
+
+    private Category importCategories(String line) throws IOException {
+        String[] col = line.split(",");
+        return new Category(Integer.parseInt(col[0]), col[1],
+                OperationType.fromStr(col[2]));
+    }
+
+    private BankAccount importBankAccounts(String line) throws IOException {
+        String[] col = line.split(",");
+        return new BankAccount(Integer.parseInt(col[0]), col[1], new BigDecimal(col[2]));
+    }
+
+    private Operation importOperations(String line) throws IOException {
+        String[] col = line.split(",");
+        return new Operation(
+                Integer.parseInt(col[0]),
+                OperationType.fromStr(col[1]),
+                Integer.parseInt(col[2]),
+                new BigDecimal(col[3]),
+                LocalDateTime.parse(col[4]),
+                col[5],
+                Integer.parseInt(col[6])
+        );
     }
 }

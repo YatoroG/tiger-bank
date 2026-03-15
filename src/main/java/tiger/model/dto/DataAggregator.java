@@ -1,14 +1,15 @@
 package tiger.model.dto;
 
+import java.util.ArrayList;
 import java.util.List;
 import tiger.model.BankAccount;
 import tiger.model.Category;
 import tiger.model.Operation;
 
 public class DataAggregator {
-    private List<BankAccount> accounts;
-    private List<Category> categories;
-    private List<Operation> operations;
+    private List<BankAccount> accounts = new ArrayList<>();
+    private List<Category> categories = new ArrayList<>();
+    private List<Operation> operations = new ArrayList<>();
 
     public DataAggregator() {
     }

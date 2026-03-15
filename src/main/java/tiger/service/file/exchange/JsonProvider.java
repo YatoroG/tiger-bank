@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import tiger.model.dto.DataAggregator;
 
 @Component
-public class JsonProvider implements IExchangeProvider {
+public class JsonProvider extends ExchangeProvider {
     private final ObjectMapper objectMapper;
 
     public JsonProvider() {
@@ -19,21 +19,13 @@ public class JsonProvider implements IExchangeProvider {
     }
 
     @Override
-    public void exportData(DataAggregator data) {
-        try {
-            objectMapper.writerWithDefaultPrettyPrinter().writeValue(new File("tiger.json"), data);
-        } catch (IOException e) {
-            throw new RuntimeException("Ошибка: Не удалось сохранить в JSON (" + e.getMessage() + ")");
-        }
+    protected void writeData(DataAggregator data, File file) throws IOException {
+        objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, data);
     }
 
     @Override
-    public DataAggregator importData() {
-        try {
-            return objectMapper.readValue(new File("tiger.json"), DataAggregator.class);
-        } catch (IOException e) {
-            throw new RuntimeException("Ошибка: Не удалось прочитать JSON (" + e.getMessage() + ")");
-        }
+    protected DataAggregator readData(File file) throws IOException {
+        return objectMapper.readValue(file, DataAggregator.class);
     }
 
     @Override
