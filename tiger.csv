@@ -1,0 +1,12 @@
+SECTION:ACCOUNTS
+id,name,balance
+1,счет 323,72000
+2,счет 23123ъ,3222
+SECTION:CATEGORIES
+id,name,type
+1,Зарплата,INCOME
+2,Штраф,EXPENSE
+SECTION:OPERATIONS
+id,type,account_id,amount,date,desc,category_id
+0,Доход,1,12000,2026-02-15T15:41:18.741123400,йцук,1
+1,Расход,2,9000,2026-02-15T15:41:32.503699900,ывфвф,2
