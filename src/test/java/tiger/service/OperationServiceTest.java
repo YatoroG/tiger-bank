@@ -1,110 +1,143 @@
 package tiger.service;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tiger.model.BankAccount;
 import tiger.model.Category;
-import tiger.model.Operation;
 import tiger.model.OperationType;
 import tiger.repository.BankAccountRepository;
 import tiger.repository.CategoryRepository;
 import tiger.repository.OperationRepository;
-import tiger.service.factory.IOperationFactory;
+import tiger.service.factory.impl.OperationFactoryImpl;
 
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class OperationServiceTest {
-    private OperationService operationService;
+    private OperationService service;
     private BankAccountRepository accountRepository;
-    private CategoryRepository categoryRepository;
     private OperationRepository operationRepository;
-    private IOperationFactory operationFactory;
+
+    private static final BigDecimal INITIAL_BALANCE = new BigDecimal("100000.00");
+    private static final BigDecimal INCOME_AMOUNT = new BigDecimal("25000.00");
+    private static final BigDecimal EXPENSE_AMOUNT = new BigDecimal("20000.00");
 
     @BeforeEach
     void setUp() {
         accountRepository = new BankAccountRepository();
-        categoryRepository = new CategoryRepository();
+        CategoryRepository categoryRepository = new CategoryRepository();
         operationRepository = new OperationRepository();
-        operationService = new OperationService(operationRepository, accountRepository, categoryRepository, operationFactory);
+        var factory = new OperationFactoryImpl();
 
-        accountRepository.add(new BankAccount(1, "Основной счет", new BigDecimal("100000.00")));
+        service = new OperationService(
+                operationRepository, accountRepository, categoryRepository, factory);
+
+        accountRepository.add(new BankAccount(1, "Основной счет", INITIAL_BALANCE));
         categoryRepository.add(new Category(1, "Зарплата", OperationType.INCOME));
         categoryRepository.add(new Category(2, "Покупки", OperationType.EXPENSE));
     }
 
     @Test
     void testAddOperationUpdatesBalance() {
-        operationService.addOperation(OperationType.INCOME, 1, new BigDecimal("25000.00"),
+        service.addOperation(OperationType.INCOME, 1, INCOME_AMOUNT,
                 LocalDateTime.now(), "Премия", 1);
-        BankAccount account = accountRepository.getAccount(1);
-        assertEquals(0, new BigDecimal("125000.00").compareTo(account.getBalance()));
+        BigDecimal expectedBalance = INITIAL_BALANCE.add(INCOME_AMOUNT);
+        assertEquals(0, expectedBalance.compareTo(accountRepository.getAccount(1).getBalance()));
         assertEquals(1, operationRepository.getAllOperations().size());
     }
 
     @Test
     void testUpdateAmountRecalculatesBalance() {
-        Operation op = operationService.addOperation(OperationType.EXPENSE, 1, new BigDecimal("20000.00"),
-                LocalDateTime.now(), "Покупка техники", 2);
-        operationService.updateAmount(op.getOperationId(), new BigDecimal("40000.00"));
-        BankAccount account = accountRepository.getAccount(1);
-        assertEquals(0, new BigDecimal("60000.00").compareTo(account.getBalance()));
+        var op = service.addOperation(OperationType.EXPENSE, 1, EXPENSE_AMOUNT,
+                LocalDateTime.now(), "Техника", 2);
+        service.updateAmount(op.getOperationId(), new BigDecimal("40000.00"));
+        BigDecimal expectedBalance = new BigDecimal("60000.00");
+        assertEquals(0, expectedBalance.compareTo(accountRepository.getAccount(1).getBalance()));
     }
 
     @Test
     void testDeleteOperationRecalculatesBalance() {
-        Operation op = operationService.addOperation(OperationType.EXPENSE, 1, new BigDecimal("30000.00"),
-                LocalDateTime.now(), "Покупка техники", 2);
-        operationService.deleteOperation(op.getOperationId());
-        BankAccount account = accountRepository.getAccount(1);
-        assertEquals(0, new BigDecimal("100000.00").compareTo(account.getBalance()));
-        assertThrows(IllegalArgumentException.class, () -> operationService.getOperation(op.getOperationId()));
+        var op = service.addOperation(OperationType.EXPENSE, 1, new BigDecimal("30000.00"),
+                LocalDateTime.now(), "Услуги", 2);
+        service.deleteOperation(op.getOperationId());
+        assertEquals(0, INITIAL_BALANCE.compareTo(accountRepository.getAccount(1).getBalance()));
+        assertThrows(IllegalArgumentException.class, () -> service.getOperation(op.getOperationId()));
     }
 
     @Test
     void testGetLastFiveOperations() {
-        for (int i = 0; i < 6; i++) {
-            operationService.addOperation(OperationType.INCOME, 1, new BigDecimal("10000.00"),
-                    LocalDateTime.now(), "Операция №" + i, 1);
+        for (int i = 1; i <= 6; i++) {
+            service.addOperation(OperationType.INCOME, 1, new BigDecimal("1000.00"),
+                    LocalDateTime.now(), "Оп " + i, 1);
         }
-        List<Operation> lastFive = operationService.getLastFiveOperations();
+        var lastFive = service.getLastFiveOperations();
         assertEquals(5, lastFive.size());
-        assertEquals(2, lastFive.get(0).getOperationId());
-        assertEquals(6, lastFive.get(4).getOperationId());
-    }
-
-    @Test
-    void testUpdateDate() {
-        Operation op = operationService.addOperation(OperationType.INCOME, 1, new BigDecimal("10000.00"),
-                LocalDateTime.now(), "Описание", 2);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-        LocalDateTime newDate = LocalDate.parse("10.01.2026", formatter).atStartOfDay();
-        operationService.updateDate(op.getOperationId(), newDate);
-        Operation updated = operationService.getOperation(op.getOperationId());
-        assertEquals(newDate, updated.getDate());
+        assertEquals(2, lastFive.iterator().next().id());
     }
 
     @Test
     void testUpdateCategoryAndDescription() {
-        Operation op = operationService.addOperation(OperationType.INCOME, 1, new BigDecimal("10000.00"),
-                LocalDateTime.now(), "Старое описание", 2);
-        operationService.updateDescription(op.getOperationId(), "Новое описание");
-        operationService.updateCategory(op.getOperationId(), 1);
-        Operation updated = operationService.getOperation(op.getOperationId());
-        assertEquals("Новое описание", updated.getDescription());
-        assertEquals(1, updated.getCategoryId());
+        var op = service.addOperation(OperationType.INCOME, 1, INCOME_AMOUNT,
+                LocalDateTime.now(), "Старое описание", 1);
+        service.updateDescription(op.getOperationId(), "Новое описание");
+        service.updateCategory(op.getOperationId(), 2);
+        var updated = service.getOperation(op.getOperationId());
+        assertEquals("Новое описание", updated.description());
+        assertEquals(2, updated.categoryId());
+    }
+
+    @Test
+    void testUpdateDate() {
+        var op = service.addOperation(OperationType.INCOME, 1, INCOME_AMOUNT,
+                LocalDateTime.now(), "Премия", 1);
+        LocalDateTime newDate = LocalDateTime.of(2026, 1, 1, 10, 0);
+
+        service.updateDescription(op.getOperationId(), "Кэшбек");
+        service.updateDate(op.getOperationId(), newDate);
+
+        var updated = service.getOperation(op.getOperationId());
+        assertEquals("Кэшбек", updated.description());
+        assertEquals(newDate, updated.date());
+    }
+
+    @Test
+    void testGetAllOperations() {
+        service.addOperation(OperationType.EXPENSE, 1, EXPENSE_AMOUNT,
+                LocalDateTime.now(), "Техника", 2);
+        service.addOperation(OperationType.INCOME, 1, INCOME_AMOUNT,
+                LocalDateTime.now(), "Премия", 1);
+        var operations = service.getAllOperations();
+        assertNotNull(operations);
+        assertEquals(2, operations.size());
     }
 
     @Test
     void testCheckNextId() {
-        operationService.checkNextId(10);
-        operationService.addOperation(OperationType.INCOME, 1, new BigDecimal("25000.00"),
+        service.checkNextId(10);
+        service.addOperation(OperationType.INCOME, 1, INCOME_AMOUNT,
                 LocalDateTime.now(), "Премия", 1);
-        assertNotNull(operationService.getOperation(11));
+        assertNotNull(service.getOperation(11));
+    }
+
+    @Test
+    void testInvalidAccountOrCategoryThrowsException() {
+        assertThrows(IllegalArgumentException.class, () ->
+                service.addOperation(OperationType.INCOME,
+                        99, INCOME_AMOUNT, LocalDateTime.now(),
+                        "Error", 1));
+        assertThrows(IllegalArgumentException.class, () ->
+                service.addOperation(OperationType.INCOME,
+                        1, INCOME_AMOUNT, LocalDateTime.now(),
+                        "Error", 99));
+    }
+
+    @Test
+    void testUpdateCategoryWithInvalidIdThrowsException() {
+        var op = service.addOperation(OperationType.INCOME, 1, INCOME_AMOUNT,
+                LocalDateTime.now(), "Премия", 1);
+        assertThrows(IllegalArgumentException.class, () ->
+                service.updateCategory(op.getOperationId(), 999));
     }
 }

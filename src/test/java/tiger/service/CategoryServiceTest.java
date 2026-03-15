@@ -1,64 +1,88 @@
 package tiger.service;
 
-import java.util.Collection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import tiger.model.Category;
 import tiger.model.OperationType;
 import tiger.repository.CategoryRepository;
+import tiger.service.factory.impl.CategoryFactoryImpl;
 
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class CategoryServiceTest {
-    private CategoryRepository categoryRepository;
-    private CategoryService categoryService;
+    private CategoryService service;
 
     @BeforeEach
     void setUp() {
-        categoryRepository = new CategoryRepository();
-        categoryService = new CategoryService(categoryRepository);
+        CategoryRepository repository = new CategoryRepository();
+        CategoryFactoryImpl factory = new CategoryFactoryImpl();
+        service = new CategoryService(repository, factory);
     }
 
     @Test
     void testCreateAndGetAllCategories() {
-        categoryService.createCategory("Зарплата", OperationType.INCOME);
-        categoryService.createCategory("Еда", OperationType.EXPENSE);
-        Collection<Category> categories = categoryService.getAllCategories();
+        service.createCategory("Зарплата", OperationType.INCOME);
+        service.createCategory("Еда", OperationType.EXPENSE);
+
+        var categories = service.getAllCategories();
         assertEquals(2, categories.size());
-        assertNotNull(categoryService.getCategory(1));
-        assertNotNull(categoryService.getCategory(2));
+
+        var incomeCat = categories.stream()
+                .filter(c -> c.type() == OperationType.INCOME)
+                .findFirst()
+                .orElseThrow();
+        assertEquals(1, incomeCat.id());
+        assertEquals("Зарплата", incomeCat.name());
+
+        var expenseCat = categories.stream()
+                .filter(c -> c.type() == OperationType.EXPENSE)
+                .findFirst()
+                .orElseThrow();
+        assertEquals(2, expenseCat.id());
+        assertEquals("Еда", expenseCat.name());
     }
 
     @Test
     void testUpdateCategoryName() {
-        categoryService.createCategory("Старое имя", OperationType.INCOME);
-        categoryService.updateCategoryName(1, "Новое имя");
-        Category category = categoryRepository.getCategory(1);
-        assertEquals("Новое имя", category.getName());
+        service.createCategory("Старое имя", OperationType.INCOME);
+        service.updateCategoryName(1, "Новое имя");
+        var category = service.getCategory(1);
+        assertEquals("Новое имя", category.name());
     }
 
     @Test
     void testUpdateCategoryType() {
-        categoryService.createCategory("Смена категории", OperationType.INCOME);
-        categoryService.updateCategoryType(1, OperationType.EXPENSE);
-        Category category = categoryRepository.getCategory(1);
-        assertEquals(OperationType.EXPENSE, category.getCategoryType());
+        service.createCategory("Смена категории", OperationType.INCOME);
+        service.updateCategoryType(1, OperationType.EXPENSE);
+        var category = service.getCategory(1);
+        assertEquals(OperationType.EXPENSE, category.type());
     }
 
     @Test
     void testDeleteCategory() {
-        categoryService.createCategory("Удаление категории", OperationType.EXPENSE);
-        assertNotNull(categoryService.getCategory(1));
-        categoryService.deleteCategory(1);
-        assertThrows(IllegalArgumentException.class, () -> categoryService.getCategory(1));
-        assertEquals(0, categoryService.getAllCategories().size());
+        service.createCategory("Удаление категории", OperationType.EXPENSE);
+        assertNotNull(service.getCategory(1));
+        service.deleteCategory(1);
+        assertThrows(IllegalArgumentException.class, () -> service.getCategory(1));
+        assertEquals(0, service.getAllCategories().size());
+    }
+
+    @Test
+    void testGetCategory() {
+        service.createCategory("Получение категории", OperationType.INCOME);
+        assertNotNull(service.getCategory(1));
     }
 
     @Test
     void testCheckNextId() {
-        categoryService.checkNextId(10);
-        categoryService.createCategory("Зарплата", OperationType.INCOME);
-        assertNotNull(categoryService.getCategory(11));
+        service.checkNextId(10);
+        service.createCategory("Зарплата", OperationType.INCOME);
+        assertNotNull(service.getCategory(11));
+    }
+
+    @Test
+    void testInvalidDeleteIdThrowsException() {
+        assertThrows(IllegalArgumentException.class, () -> service.getCategory(1));
+        assertThrows(IllegalArgumentException.class, () -> service.deleteCategory(1));
     }
 }
