@@ -17,14 +17,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class OperationFactoryTest {
     private OperationFactoryImpl factory;
-    private BankAccountRepository accountRepository;
-    private CategoryRepository categoryRepository;
     int accId, catId = 1;
 
     @BeforeEach
     void setUp() {
-        accountRepository = new BankAccountRepository();
-        categoryRepository = new CategoryRepository();
+        BankAccountRepository accountRepository = new BankAccountRepository();
+        CategoryRepository categoryRepository = new CategoryRepository();
         factory = new OperationFactoryImpl();
 
         accountRepository.add(new BankAccount(1, "Основной счет", new BigDecimal("100000.00")));

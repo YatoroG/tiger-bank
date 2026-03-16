@@ -56,5 +56,4 @@ public class BankAccountService {
         }
         return repository.getAccount(id);
     }
-
 }

@@ -82,6 +82,6 @@ class CategoryIntegrationTest {
     @Test
     void testGetCategoryThrowsExceptionIfNotFound() {
         var request = new GetCategoryRequest(999);
-        assertThrows(RuntimeException.class, () -> {facade.getCategory(request);});
+        assertThrows(RuntimeException.class, () -> facade.getCategory(request));
     }
 }

@@ -73,6 +73,6 @@ public class BankAccountIntegrationTest {
     @Test
     void testGetBankAccountThrowsExceptionIfNotFound() {
         var request = new GetAccountRequest(999);
-        assertThrows(RuntimeException.class, () -> { facade.getAccount(request); });
+        assertThrows(RuntimeException.class, () -> facade.getAccount(request));
     }
 }
