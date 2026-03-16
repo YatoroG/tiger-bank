@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class CommandExecutor {
-    public void execute(Command command) {
+    public void execute(ICommand command) {
         long startTime = System.nanoTime();
         try {
             command.execute();

@@ -1,10 +1,10 @@
 package tiger.service.command.operation;
 
 import tiger.model.requests.operation.UpdateOperationDateRequest;
-import tiger.service.command.Command;
+import tiger.service.command.ICommand;
 import tiger.service.facade.OperationFacade;
 
-public class UpdateOperationDateCommand implements Command {
+public class UpdateOperationDateCommand implements ICommand {
     private final OperationFacade facade;
     private final UpdateOperationDateRequest request;
 

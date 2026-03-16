@@ -1,11 +1,11 @@
 package tiger.service.command.report;
 
 import tiger.model.requests.report.GroupedReportRequest;
-import tiger.service.command.Command;
+import tiger.service.command.ICommand;
 import tiger.service.dto.GroupedCategoriesReport;
 import tiger.service.facade.ReportFacade;
 
-public class GroupedReportCommand implements Command {
+public class GroupedReportCommand implements ICommand {
     private final ReportFacade facade;
     private final GroupedReportRequest request;
     private GroupedCategoriesReport result;

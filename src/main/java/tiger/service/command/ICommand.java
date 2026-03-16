@@ -1,6 +1,6 @@
 package tiger.service.command;
 
-public interface Command {
+public interface ICommand {
     void execute();
 
     String getName();

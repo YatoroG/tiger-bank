@@ -1,10 +1,10 @@
 package tiger.service.command.account;
 
 import tiger.model.requests.account.UpdateAccountNameRequest;
-import tiger.service.command.Command;
+import tiger.service.command.ICommand;
 import tiger.service.facade.BankAccountFacade;
 
-public class UpdateAccountNameCommand implements Command {
+public class UpdateAccountNameCommand implements ICommand {
     private final BankAccountFacade facade;
     private final UpdateAccountNameRequest request;
 

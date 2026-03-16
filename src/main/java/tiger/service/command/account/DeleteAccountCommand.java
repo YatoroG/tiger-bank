@@ -1,10 +1,10 @@
 package tiger.service.command.account;
 
 import tiger.model.requests.account.DeleteAccountRequest;
-import tiger.service.command.Command;
+import tiger.service.command.ICommand;
 import tiger.service.facade.BankAccountFacade;
 
-public class DeleteAccountCommand implements Command {
+public class DeleteAccountCommand implements ICommand {
     private final BankAccountFacade facade;
     private final DeleteAccountRequest request;
 

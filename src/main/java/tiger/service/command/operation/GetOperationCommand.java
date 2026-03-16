@@ -2,10 +2,10 @@ package tiger.service.command.operation;
 
 import tiger.model.dto.OperationFields;
 import tiger.model.requests.operation.GetOperationRequest;
-import tiger.service.command.Command;
+import tiger.service.command.ICommand;
 import tiger.service.facade.OperationFacade;
 
-public class GetOperationCommand implements Command {
+public class GetOperationCommand implements ICommand {
     private final OperationFacade facade;
     private final GetOperationRequest request;
     private OperationFields operation;

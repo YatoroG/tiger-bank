@@ -1,9 +1,9 @@
 package tiger.service.command.exchange;
 
-import tiger.service.command.Command;
+import tiger.service.command.ICommand;
 import tiger.service.file.exchange.ExchangeService;
 
-public class ImportCommand implements Command {
+public class ImportCommand implements ICommand {
     private final ExchangeService service;
     private final String format;
 
