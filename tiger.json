@@ -1,0 +1,37 @@
+{
+  "accounts" : [ {
+    "accountId" : 1,
+    "name" : "счет 323",
+    "balance" : 72000
+  }, {
+    "accountId" : 2,
+    "name" : "счет 23123ъ",
+    "balance" : 3222
+  } ],
+  "categories" : [ {
+    "categoryId" : 1,
+    "name" : "Зарплата",
+    "categoryType" : "INCOME"
+  }, {
+    "categoryId" : 2,
+    "name" : "Штраф",
+    "categoryType" : "EXPENSE"
+  } ],
+  "operations" : [ {
+    "operationId" : 0,
+    "type" : "INCOME",
+    "bankAccountId" : 1,
+    "amount" : 12000,
+    "date" : "2026-02-15T15:41:18.7411234",
+    "description" : "йцук",
+    "categoryId" : 1
+  }, {
+    "operationId" : 1,
+    "type" : "EXPENSE",
+    "bankAccountId" : 2,
+    "amount" : 9000,
+    "date" : "2026-02-15T15:41:32.5036999",
+    "description" : "ывфвф",
+    "categoryId" : 2
+  } ]
+}

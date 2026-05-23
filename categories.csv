@@ -1,0 +1,7 @@
+id,name,type
+1,Зарплата,INCOME
+2,Фриланс,INCOME
+3,Продукты,EXPENSE
+4,Транспорт,EXPENSE
+5,Развлечения,EXPENSE
+6,Аренда,EXPENSE
